@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRESHIX AI — Моментальный чат</title>
+    <style>
+        :root { --bg: #0f1115; --accent: #6366f1; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Шапка */
+        header { padding: 15px; text-align: center; border-bottom: 1px solid #333; font-weight: bold; font-size: 20px; }
+        header span { color: var(--accent); }
+
+        /* Окно чата */
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; line-height: 1.4; }
+        .user { align-self: flex-end; background: var(--accent); }
+        .ai { align-self: flex-start; background: #2a2d35; }
+
+        /* Поле ввода */
+        .input-area { padding: 15px; background: #1a1d23; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #2a2d35; color: white; outline: none; }
+        button { background: var(--accent); border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>FRESHIX <span>AI</span></header>
+
+    <div id="chat-box">
+        <div class="msg ai">Привет! Я готов работать без серверов. Спроси что-нибудь!</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Напиши сообщение...">
+        <button onclick="sendMsg()">Go</button>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+        // СЮДА ВСТАВЬ СВОЙ КЛЮЧ
+        const API_KEY = "AIzaSyBCWF63YMvkqO_8gqzMkzGvVPrOL5uU6bE";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        window.sendMsg = async () => {
+            const input = document.getElementById('user-input');
+            const box = document.getElementById('chat-box');
+            if (!input.value.trim()) return;
+
+            // Добавляем твое сообщение
+            box.innerHTML += `<div class="msg user">${input.value}</div>`;
+            const userText = input.value;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                // Прямой запрос к ИИ
+                const result = await model.generateContent(userText);
+                const response = await result.response;
+                box.innerHTML += `<div class="msg ai">${response.text()}</div>`;
+            } catch (e) {
+                box.innerHTML += `<div class="msg ai" style="color:red">Ошибка! Проверь API ключ.</div>`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>
